@@ -31,6 +31,7 @@ const signUp = asyncHandler(async (req, res, next) => {
   try {
     const salt = await bcrypt.genSalt(10);
     const { firstName, lastName, email, password } = req.body;
+    console.log(req.body)
     const hashedPassword = await bcrypt.hash(password, salt);
     // Incorrect data
     if (!firstName || !lastName || !email || !password) {

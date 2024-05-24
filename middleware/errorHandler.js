@@ -1,34 +1,45 @@
 const NODE_ENVIRONMENT = process.env.NODE_ENV || "development";
 
 const errorHandler = (error, request, response, next) => {
-	const errorMessage = getErrorMessage(error);
-		logErrorMessage(errorMessage);
-		
-	if (response.headersSent) {
-		return next(error);
-	}
+  // Get error message
+  const errorMessage = getErrorMessage(error);
+  
+  // Log error message
+  logErrorMessage(errorMessage);
 
-	const errorResponse = {
-		statusCode: getHttpStatusCode({ error, response }),
-		body: response
-	};
+  // Check if headers have already been sent
+  if (response.headersSent) {
+    return next(error);
+  }
 
+  // Determine HTTP status code
+  const statusCode = getHttpStatusCode({ error, response });
 
-	if (NODE_ENVIRONMENT !== "production") {
-		errorResponse.body = errorMessage;
-	}
-	const resCheck = response.status(errorResponse.statusCode);
-	
-	response.format({
-		"application/json": () => {
-			response.json({ message: `${errorResponse.body}` });
-		},
+  // Construct error response
+  const errorResponse = {
+    statusCode,
+    message: errorMessage
+  };
 
-		default: () => {
-			response.type("text/plain").send(`${errorResponse.body}`);
-		},
-	});
-	next();
-}
+  // In non-production environments, include error message in response body
+  if (NODE_ENVIRONMENT !== "production") {
+    errorResponse.body = errorMessage;
+  }
+
+  // Set HTTP status code
+  response.status(errorResponse.statusCode);
+
+  // Format response based on content type
+  response.format({
+    "application/json": () => {
+      response.json({ message: errorResponse.message });
+    },
+    default: () => {
+      response.type("text/plain").send(errorResponse.message);
+    }
+  });
+
+  next();
+};
 
 module.exports = { errorHandler };

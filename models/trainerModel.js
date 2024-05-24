@@ -2,20 +2,20 @@ const mongoose = require("mongoose");
 
 const trainerSchema = new mongoose.Schema({
     trainerName: { type: String, required: true },
-    employeeId: { type: String, required: true, unique:[true, 'Employee ID already found.']  },
-    comprehension: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'comprehension',
-        required : false
-    }]
+    employeeId: { type: String, required: true, unique: [true, 'Employee ID already found.'] },
+  
 
 },
-{    statics : {
-    },
-    timestamps: true,
-    toJSON: {virtuals: true}
-    
-});
+    {
+        statics: {
+            findByName: async function (name) {
+                return await this.find({ trainerName: name });
+            }
+        },
+        timestamps: true,
+        toJSON: { virtuals: true }
+
+    });
 
 
 
